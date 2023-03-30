@@ -1,3 +1,8 @@
+# Project specific
+*.zip
+*.pth
+COMPASS-XP/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
