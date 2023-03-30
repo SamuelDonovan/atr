@@ -6,6 +6,9 @@ import logging
 import os
 import sys
 
+# From pandas
+import pandas as pd
+
 # From pytorch
 import torch
 import torchvision
@@ -140,10 +143,18 @@ if __name__ == "__main__":
         ]
     )
 
-    dataset = torchvision.datasets.ImageFolder(
-        "COMPASS-XP/COMPASS-XP",
+    dataset_metadata = pd.read_csv("COMPASS-XP/COMPASS-XP/meta.txt", sep="\t")
+
+    dataset = libdata.CXPDataset(
+        metadata=dataset_metadata,
+        root_dir="COMPASS-XP/COMPASS-XP/Photo",
         transform=train_transform,
     )
+
+    # dataset = torchvision.datasets.ImageFolder(
+    #     "COMPASS-XP/COMPASS-XP",
+    #     transform=train_transform,
+    # )
     TRAIN_SIZE = int(0.8 * len(dataset))
     train_dataset, test_dataset = torch.utils.data.random_split(
         dataset,

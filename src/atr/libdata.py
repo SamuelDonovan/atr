@@ -8,6 +8,15 @@ import zipfile
 # From pandas
 import pandas
 
+# From pytroch
+import torch
+
+# From scikit-image
+# import skimage
+
+# From numpy
+import numpy as np
+
 
 def download_zip_data(urls):
     for url in urls:
@@ -28,26 +37,37 @@ def download_zip_data(urls):
         os.remove(file)
 
 
-# I know there are other ways to do this such as make a custom
-# dataset class but this felt like the path of least resistance
-# and would allow for more common code.
-def sort_test_data():
-    SORTED_DIR = "GTSRB_Final_Test_Images/GTSRB/Final_Test/Sorted"
-    if os.path.exists(SORTED_DIR):
-        return
-    logging.info("Sorting testing data.")
-    df = pandas.read_csv("GTSRB_Final_Test_GT/GT-final_test.csv", sep=";")
-    os.mkdir(SORTED_DIR)
-    for idx in range(len(df.index)):
-        classFolder = os.path.join(SORTED_DIR, str(df.ClassId[idx]).zfill(5))
-        if not os.path.exists(classFolder):
-            os.mkdir(classFolder)
-        shutil.copy(
-            os.path.join(
-                "GTSRB_Final_Test_Images/GTSRB/Final_Test/Images", str(df.Filename[idx])
-            ),
-            classFolder,
-        )
+class CXPDataset(torch.utils.data.Dataset):
+    def __init__(self, metadata, root_dir, transform=None):
+        self.metadata = metadata
+        self.root_dir = root_dir
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.metadata)
+
+    def __getitem__(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+
+        index = self.metadata.basename[idx]
+        img_name = os.path.join(self.root_dir, f"{str(index).zfill(4)}.jpg")
+        print(index)
+        print(img_name)
+        # image = skimage.io.imread(img_name)
+        # landmarks = self.metadata.iloc[idx, 1:]
+        # landmarks = np.array([landmarks])
+        # landmarks = landmarks.astype('float').reshape(-1, 2)
+        # sample = {'image': image, 'landmarks': idx}
+
+        # sample = [image, float(self.metadata.iloc[idx, 0])]
+        # sample = image
+
+        # if self.transform:
+        #     sample = self.transform(sample)
+
+        # return sample
+        return image, index
 
 
 if __name__ == "__main__":
