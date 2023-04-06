@@ -11,8 +11,8 @@ import pandas
 # From pytroch
 import torch
 
-# From scikit-image
-# import skimage
+# From Python Imaging Library
+from PIL import Image
 
 # From numpy
 import numpy as np
@@ -47,27 +47,13 @@ class CXPDataset(torch.utils.data.Dataset):
         return len(self.metadata)
 
     def __getitem__(self, idx):
-        if torch.is_tensor(idx):
-            idx = idx.tolist()
-
-        index = self.metadata.basename[idx]
-        img_name = os.path.join(self.root_dir, f"{str(index).zfill(4)}.jpg")
-        print(index)
-        print(img_name)
-        # image = skimage.io.imread(img_name)
-        # landmarks = self.metadata.iloc[idx, 1:]
-        # landmarks = np.array([landmarks])
-        # landmarks = landmarks.astype('float').reshape(-1, 2)
-        # sample = {'image': image, 'landmarks': idx}
-
-        # sample = [image, float(self.metadata.iloc[idx, 0])]
-        # sample = image
-
-        # if self.transform:
-        #     sample = self.transform(sample)
-
-        # return sample
-        return image, index
+        label = 1 if self.metadata.dangerous[idx] else 0
+        img_name = os.path.join(
+            self.root_dir, f"{str(self.metadata.basename[idx]).zfill(4)}.png"
+        )
+        image = Image.open(img_name)
+        image = self.transform(image)
+        return image, label
 
 
 if __name__ == "__main__":

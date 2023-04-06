@@ -22,6 +22,8 @@ from . import dnn_utils
 from . import libdata
 from . import liblogging
 
+from torchvision import models
+
 
 def parse_inputs():
     def error_printout():
@@ -136,8 +138,8 @@ if __name__ == "__main__":
     train_transform = torchvision.transforms.Compose(
         [
             torchvision.transforms.Resize((32, 32)),
-            torchvision.transforms.RandomRotation(15),
-            torchvision.transforms.RandomHorizontalFlip(),
+            # torchvision.transforms.RandomRotation(15),
+            # torchvision.transforms.RandomHorizontalFlip(),
             torchvision.transforms.ToTensor(),
             torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ]
@@ -147,14 +149,10 @@ if __name__ == "__main__":
 
     dataset = libdata.CXPDataset(
         metadata=dataset_metadata,
-        root_dir="COMPASS-XP/COMPASS-XP/Photo",
+        root_dir="COMPASS-XP/COMPASS-XP/Grey",
         transform=train_transform,
     )
 
-    # dataset = torchvision.datasets.ImageFolder(
-    #     "COMPASS-XP/COMPASS-XP",
-    #     transform=train_transform,
-    # )
     TRAIN_SIZE = int(0.8 * len(dataset))
     train_dataset, test_dataset = torch.utils.data.random_split(
         dataset,
