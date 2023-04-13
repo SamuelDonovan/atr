@@ -154,13 +154,15 @@ if __name__ == "__main__":
 
     dataset_metadata = pd.read_csv("COMPASS-XP/COMPASS-XP/meta.txt", sep="\t")
 
-    image_type = ["Colour", "Density", "Grey", "High", "Low", "Photo"]
+    image_types = ["Colour", "Density", "Grey", "High", "Low", "Photo"]
+    image_types = ["Grey"]
 
-    dataset = libdata.CXPDataset(
-        metadata=dataset_metadata,
-        root_dir="COMPASS-XP/COMPASS-XP/Grey",
-        transform=preprocess_image,
-    )
+    for image_type in image_types:
+        dataset = libdata.CXPDataset(
+            metadata=dataset_metadata,
+            root_dirs=["COMPASS-XP/COMPASS-XP/Grey", "COMPASS-XP/COMPASS-XP/Low"],
+            transform=preprocess_image,
+        )
 
     TRAIN_SIZE = int(0.8 * len(dataset))
     train_dataset, test_dataset = torch.utils.data.random_split(
