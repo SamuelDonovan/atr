@@ -17,12 +17,10 @@ import torchvision
 import numpy as np
 
 # Local imports
-from . import cnn_model
+# from . import cnn_model
 from . import dnn_utils
 from . import libdata
 from . import liblogging
-
-from torchvision import models
 
 
 def parse_inputs():
@@ -65,6 +63,14 @@ def parse_inputs():
     )
     parser.add_argument(
         "-e", "--epochs", type=int, default=40, help="Number of training epochs"
+    )
+    parser.add_argument(
+        "--model",
+        "-m",
+        type=str,
+        choices=["alexnet", "resnet18", "resnet50"],
+        default="resnet18",
+        help="The model to use.",
     )
     parser.add_argument(
         "-v",
@@ -130,27 +136,30 @@ if __name__ == "__main__":
     TRAINING_EPOCHS = args.epochs
     logging.debug(f"Using number of training epochs of {TRAINING_EPOCHS}.")
 
-    model = cnn_model.NeuralNetwork().to(DEVICE)
-    loss_fn = torch.nn.CrossEntropyLoss()
-    if args.model_info:
-        logging.info(f"Model Information:\n{model}\n")
+    def preprocess_image(image):
+        if image.mode != "RGB":
+            image = image.convert("RGB")
 
-    train_transform = torchvision.transforms.Compose(
-        [
-            torchvision.transforms.Resize((32, 32)),
-            # torchvision.transforms.RandomRotation(15),
-            # torchvision.transforms.RandomHorizontalFlip(),
-            torchvision.transforms.ToTensor(),
-            torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-        ]
-    )
+        width, height = image.size
+        crop_size = min(width, height, 224)
+        transform = torchvision.transforms.Compose(
+            [
+                torchvision.transforms.RandomCrop(crop_size),
+                torchvision.transforms.Resize((224, 224)),
+                torchvision.transforms.ToTensor(),
+                torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            ]
+        )
+        return transform(image)
 
     dataset_metadata = pd.read_csv("COMPASS-XP/COMPASS-XP/meta.txt", sep="\t")
+
+    image_type = ["Colour", "Density", "Grey", "High", "Low", "Photo"]
 
     dataset = libdata.CXPDataset(
         metadata=dataset_metadata,
         root_dir="COMPASS-XP/COMPASS-XP/Grey",
-        transform=train_transform,
+        transform=preprocess_image,
     )
 
     TRAIN_SIZE = int(0.8 * len(dataset))
@@ -168,6 +177,19 @@ if __name__ == "__main__":
     test_loader = torch.utils.data.DataLoader(
         test_dataset, batch_size=BATCH_SIZE, shuffle=True
     )
+
+    if "resnet18" == args.model:
+        model = torchvision.models.resnet18(num_classes=2).to(DEVICE)
+    elif "resnet50" == args.model:
+        model = torchvision.models.resnet50(num_classes=2).to(DEVICE)
+    elif "alexnet" == args.model:
+        model = torchvision.models.alexnet(num_classes=2).to(DEVICE)
+    else:
+        raise Exception("Invalid model specified!")
+
+    loss_fn = torch.nn.CrossEntropyLoss()
+    if args.model_info:
+        logging.info(f"Model Information:\n{model}\n")
 
     if args.train:
         optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)

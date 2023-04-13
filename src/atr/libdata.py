@@ -49,9 +49,12 @@ class CXPDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         label = 1 if self.metadata.dangerous[idx] else 0
         img_name = os.path.join(
-            self.root_dir, f"{str(self.metadata.basename[idx]).zfill(4)}.png"
+            self.root_dir, f"{str(self.metadata.basename[idx]).zfill(4)}"
         )
-        image = Image.open(img_name)
+        try:
+            image = Image.open(img_name + ".png")
+        except:
+            image = Image.open(img_name + ".jpg")
         image = self.transform(image)
         return image, label
 
