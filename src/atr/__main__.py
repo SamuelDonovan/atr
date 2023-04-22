@@ -5,6 +5,7 @@ import argparse
 import logging
 import os
 import sys
+import textwrap
 
 # From pandas
 import pandas as pd
@@ -30,12 +31,27 @@ def parse_inputs():
         sys.exit()
 
     parser = argparse.ArgumentParser(
-        description="""
-        The objective for this project is to gain hands-on 
-        experience implementing, training, and experimenting with basic
-        deep neural network (DNN) architectures for a computer vision problem.
-        """,
+        description=textwrap.dedent(
+            """\
+        We are solving the problem of detecting objects that may be threatening to
+        the safety of air travel. Detecting threatening objects prevents them from 
+        causing harm to air travel. False positives in this process delay the 
+        screening process and reduce the efficiency of airports.
+
+        The value added by our project and the way we feel it advances is the field
+        in a novel way is that we will be training various neural network models on 
+        a number different subsets/combinations of of the image data shown in 
+        the COMPASS-XP dataset (e.g. high energy x-ray image with density image vs 
+        low energy x-ray image with full color image, etc). This will allow us to 
+        compare and contrast the various permutations and assert what the best model 
+        and input dataset is for this specific application.
+
+        This code is made to be highly parameterizable to enable this mixing and matching
+        of different models and subsets of the data. 
+        """
+        ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        epilog="Example: python3 -m atr --train --test --save --save_name resnet18_e10_b4_dCDGHL --batch_size 4 --epochs 10 --model resnet18 --data Colour Density Grey High Low",
     )
     parser.add_argument("--train", action="store_true", help="Train the model")
     parser.add_argument("--test", action="store_true", help="Test the model")
@@ -50,7 +66,7 @@ def parse_inputs():
         help="Create training and/or class confusion plot",
     )
     parser.add_argument(
-        "--model_name",
+        "--save_name",
         type=str,
         default="atr_model",
         help="Name the model to save/load",
@@ -68,9 +84,33 @@ def parse_inputs():
         "--model",
         "-m",
         type=str,
-        choices=["alexnet", "resnet18", "resnet50"],
+        choices=[
+            "alexnet",
+            "resnet18",
+            "resnet50",
+            "vit_h_14",
+            "vgg11",
+            "efficientnet_b0",
+            "densenet121",
+            "densenet201",
+            "maxvit_t",
+            "swin_t",
+            "swin_v2_t",
+            "efficientnet_v2_s",
+            "convnext_tiny",
+        ],
         default="resnet18",
         help="The model to use.",
+    )
+    parser.add_argument(
+        "--data",
+        nargs="+",
+        type=str,
+        default=["Colour", "Density", "Grey", "High", "Low", "Photo"],
+        help="""
+        The types of data to use from the dataset.
+        Any combination of Colour, Density, Grey, High, Low, Photo can be used.
+        """,
     )
     parser.add_argument(
         "-v",
@@ -121,6 +161,35 @@ if __name__ == "__main__":
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logging.debug(f"Using {DEVICE} for torch.")
 
+    if "resnet18" == args.model:
+        model = torchvision.models.resnet18(num_classes=2).to(DEVICE)
+    elif "resnet50" == args.model:
+        model = torchvision.models.resnet50(num_classes=2).to(DEVICE)
+    elif "alexnet" == args.model:
+        model = torchvision.models.alexnet(num_classes=2).to(DEVICE)
+    elif "vit_h_14" == args.model:
+        model = torchvision.models.vit_h_14(num_classes=2).to(DEVICE)
+    elif "vgg11" == args.model:
+        model = torchvision.models.vgg11(num_classes=2).to(DEVICE)
+    elif "efficientnet_b0" == args.model:
+        model = torchvision.models.efficientnet_b0(num_classes=2).to(DEVICE)
+    elif "densenet121" == args.model:
+        model = torchvision.models.densenet121(num_classes=2).to(DEVICE)
+    elif "densenet201" == args.model:
+        model = torchvision.models.densenet201(num_classes=2).to(DEVICE)
+    elif "maxvit_t" == args.model:
+        model = torchvision.models.maxvit_t(num_classes=2).to(DEVICE)
+    elif "swin_t" == args.model:
+        model = torchvision.models.swin_t(num_classes=2).to(DEVICE)
+    elif "swin_v2_t" == args.model:
+        model = torchvision.models.swin_v2_t(num_classes=2).to(DEVICE)
+    elif "efficientnet_v2_s" == args.model:
+        model = torchvision.models.efficientnet_v2_s(num_classes=2).to(DEVICE)
+    elif "convnext_tiny" == args.model:
+        model = torchvision.models.convnext_tiny(num_classes=2).to(DEVICE)
+    else:
+        raise Exception("Invalid model specified!")
+
     # Download training/test data.
     libdata.download_zip_data(
         [
@@ -154,13 +223,12 @@ if __name__ == "__main__":
 
     dataset_metadata = pd.read_csv("COMPASS-XP/COMPASS-XP/meta.txt", sep="\t")
 
-    image_types = ["Colour", "Density", "Grey", "High", "Low", "Photo"]
-    image_types = ["Grey"]
+    root_dirs = ["COMPASS-XP/COMPASS-XP/" + image_type for image_type in args.data]
 
-    for image_type in image_types:
+    for image_type in args.data:
         dataset = libdata.CXPDataset(
             metadata=dataset_metadata,
-            root_dirs=["COMPASS-XP/COMPASS-XP/Grey", "COMPASS-XP/COMPASS-XP/Low"],
+            root_dirs=root_dirs,
             transform=preprocess_image,
         )
 
@@ -179,15 +247,6 @@ if __name__ == "__main__":
     test_loader = torch.utils.data.DataLoader(
         test_dataset, batch_size=BATCH_SIZE, shuffle=True
     )
-
-    if "resnet18" == args.model:
-        model = torchvision.models.resnet18(num_classes=2).to(DEVICE)
-    elif "resnet50" == args.model:
-        model = torchvision.models.resnet50(num_classes=2).to(DEVICE)
-    elif "alexnet" == args.model:
-        model = torchvision.models.alexnet(num_classes=2).to(DEVICE)
-    else:
-        raise Exception("Invalid model specified!")
 
     loss_fn = torch.nn.CrossEntropyLoss()
     if args.model_info:
@@ -216,10 +275,10 @@ if __name__ == "__main__":
         dnn_utils.plot_accuracy(training_accuracy, validation_accuracy)
 
     if args.save:
-        torch.save(model.state_dict(), f"{args.model_name}.pth")
+        torch.save(model.state_dict(), f"{args.save_name}.pth")
 
     if args.load:
-        model.load_state_dict(torch.load(f"{args.model_name}.pth"))
+        model.load_state_dict(torch.load(f"{args.save_name}.pth"))
 
     if args.test:
         logging.info("")
