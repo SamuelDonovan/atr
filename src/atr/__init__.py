@@ -1,4 +1,3 @@
-from . import cnn_model
 from . import dnn_utils
 from . import libdata
 from . import liblogging

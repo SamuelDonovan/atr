@@ -18,7 +18,6 @@ import torchvision
 import numpy as np
 
 # Local imports
-# from . import cnn_model
 from . import dnn_utils
 from . import libdata
 from . import liblogging
@@ -284,5 +283,3 @@ if __name__ == "__main__":
         logging.info("")
         logging.info("Using final test data:")
         dnn_utils.test(test_loader, model, loss_fn, DEVICE)
-    if args.plot and args.test:
-        dnn_utils.plot_confusion_matrix(model, test_loader, DEVICE)

@@ -11,10 +11,6 @@ from matplotlib import pyplot as plt
 # From numpy
 import numpy as np
 
-from sklearn.metrics import confusion_matrix
-import seaborn as sn
-import pandas as pd
-
 
 def train(dataloader, model, loss_fn, optimizer, device):
     size = len(dataloader.dataset)
@@ -77,29 +73,6 @@ def plot_accuracy(training_data, validation_data):
     PLOT_NAME = "accuracy_plot.png"
     plt.savefig(PLOT_NAME)
     logging.debug(f"Created accuracy vs epochs plot {PLOT_NAME}.")
-
-
-def plot_confusion_matrix(model, test_loader, device):
-    model.eval()
-    actual_labels = []
-    predicted_labels = []
-    with torch.no_grad():
-        for data, target in test_loader:
-            data, target = data.to(device), target.to(device)
-            output = model(data)
-            pred = output.argmax(dim=1, keepdim=True)
-            predicted_labels.append(pred[0].item())
-            actual_labels.append(target[0].item())
-    cf_matrix = confusion_matrix(predicted_labels, actual_labels)
-    pd.set_option("display.precision", 4)
-    df_cm = pd.DataFrame(cf_matrix * 100 / np.sum(cf_matrix, axis=1))
-    plt.figure(figsize=(30, 10))
-    plt.title("Class Confusion Matrix")
-    sn.heatmap(df_cm, annot=True, fmt=".2g")
-    PLOT_NAME = "class_confusion_matrix.png"
-    plt.savefig(PLOT_NAME)
-    logging.debug(f"Created class confusino matrix {PLOT_NAME}.")
-
 
 if __name__ == "__main__":
     raise Exception("This module is not an entry point!")
