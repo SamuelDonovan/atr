@@ -1,6 +1,7 @@
 # Project specific
 *.zip
 *.pth
+*.png
 COMPASS-XP/
 
 # Byte-compiled / optimized / DLL files

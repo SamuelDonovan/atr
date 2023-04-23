@@ -80,6 +80,13 @@ def parse_inputs():
         "-e", "--epochs", type=int, default=40, help="Number of training epochs"
     )
     parser.add_argument(
+        "-i",
+        "--image_size",
+        type=int,
+        default=224,
+        help="Number of pixels on each side of the image to use.",
+    )
+    parser.add_argument(
         "--model",
         "-m",
         type=str,
@@ -97,6 +104,8 @@ def parse_inputs():
             "swin_v2_t",
             "efficientnet_v2_s",
             "convnext_tiny",
+            "squeezenet1_0",
+            "squeezenet1_1",
         ],
         default="resnet18",
         help="The model to use.",
@@ -186,6 +195,10 @@ if __name__ == "__main__":
         model = torchvision.models.efficientnet_v2_s(num_classes=2).to(DEVICE)
     elif "convnext_tiny" == args.model:
         model = torchvision.models.convnext_tiny(num_classes=2).to(DEVICE)
+    elif "squeezenet1_0" == args.model:
+        model = torchvision.models.squeezenet1_0(num_classes=2).to(DEVICE)
+    elif "squeezenet1_1" == args.model:
+        model = torchvision.models.squeezenet1_1(num_classes=2).to(DEVICE)
     else:
         raise Exception("Invalid model specified!")
 
@@ -209,12 +222,19 @@ if __name__ == "__main__":
             image = image.convert("RGB")
 
         width, height = image.size
-        crop_size = min(width, height, 224)
         transform = torchvision.transforms.Compose(
             [
-                torchvision.transforms.RandomCrop(crop_size),
-                torchvision.transforms.Resize((224, 224)),
+                torchvision.transforms.Resize((args.image_size, args.image_size)),
                 torchvision.transforms.ToTensor(),
+                torchvision.transforms.RandomRotation(90),
+                torchvision.transforms.RandomHorizontalFlip(),
+                torchvision.transforms.RandomVerticalFlip(),
+                # torchvision.transforms.ColorJitter(
+                #     brightness=(0.5, 1.5),
+                #     contrast=(1),
+                #     saturation=(0.5, 1.5),
+                #     hue=(-0.1, 0.1),
+                # ),
                 torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
             ]
         )
@@ -232,16 +252,21 @@ if __name__ == "__main__":
         )
 
     TRAIN_SIZE = int(0.8 * len(dataset))
-    train_dataset, test_dataset = torch.utils.data.random_split(
+    VALIDATION_SIZE = int(0.1 * len(dataset))
+    train_dataset, validation_dataset, test_dataset = torch.utils.data.random_split(
         dataset,
         [
             TRAIN_SIZE,
-            len(dataset) - TRAIN_SIZE,
+            VALIDATION_SIZE,
+            len(dataset) - VALIDATION_SIZE - TRAIN_SIZE,
         ],
     )
 
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=BATCH_SIZE, shuffle=True
+    )
+    validation_loader = torch.utils.data.DataLoader(
+        validation_dataset, batch_size=BATCH_SIZE, shuffle=True
     )
     test_loader = torch.utils.data.DataLoader(
         test_dataset, batch_size=BATCH_SIZE, shuffle=True
@@ -255,7 +280,7 @@ if __name__ == "__main__":
         optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
         training_accuracy = []
-        # validation_accuracy = []
+        validation_accuracy = []
         for epoch in range(TRAINING_EPOCHS):
             logging.info(f"-----------------------------")
             logging.info(
@@ -263,15 +288,17 @@ if __name__ == "__main__":
             )
             logging.info(f"-----------------------------")
             dnn_utils.train(train_loader, model, loss_fn, optimizer, DEVICE)
-            accuracy = dnn_utils.test(
-                train_loader, model, loss_fn, DEVICE, no_output=True
-            )
-            training_accuracy.append(accuracy)
-            # accuracy = dnn_utils.test(validation_loader, model, loss_fn, DEVICE)
-            # validation_accuracy.append(accuracy)
+            if args.plot:
+                accuracy = dnn_utils.test(
+                    train_loader, model, loss_fn, DEVICE, no_output=True
+                )
+                training_accuracy.append(accuracy)
+            accuracy = dnn_utils.test(validation_loader, model, loss_fn, DEVICE)
+            validation_accuracy.append(accuracy)
 
     if args.plot and args.train:
-        dnn_utils.plot_accuracy(training_accuracy, validation_accuracy)
+        PLOT_NAME = f"{args.model}_e{args.epochs}_b{args.batch_size}_d{args.data}"
+        dnn_utils.plot_accuracy(training_accuracy, validation_accuracy, PLOT_NAME)
 
     if args.save:
         torch.save(model.state_dict(), f"{args.save_name}.pth")

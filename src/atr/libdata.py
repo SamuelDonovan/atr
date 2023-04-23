@@ -1,6 +1,7 @@
 # From the python standard library
 import logging
 import os
+import random
 import shutil
 import urllib
 import zipfile
@@ -50,19 +51,17 @@ class CXPDataset(torch.utils.data.Dataset):
         label = 1 if self.metadata.dangerous[idx] else 0
         img_name = str(self.metadata.basename[idx]).zfill(4)
         image = None
-        for root_dir in self.root_dirs:
-            img_path = os.path.join(root_dir, img_name)
-            if os.path.exists(img_path + ".png"):
-                image = Image.open(img_path + ".png")
-                break
-            elif os.path.exists(img_path + ".jpg"):
-                image = Image.open(img_path + ".jpg")
-                break
+        img_path = os.path.join(random.choice(self.root_dirs), img_name)
+        if os.path.exists(img_path + ".png"):
+            image = Image.open(img_path + ".png")
+        elif os.path.exists(img_path + ".jpg"):
+            image = Image.open(img_path + ".jpg")
         if image is None:
             raise ValueError(
                 f"Image {img_name} not found in any of the root directories"
             )
-        image = self.transform(image)
+        if self.transform is not None:
+            image = self.transform(image)
         return image, label
 
 

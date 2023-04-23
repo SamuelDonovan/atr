@@ -55,7 +55,7 @@ def test(dataloader, model, loss_fn, device, no_output=False):
     return accuracy
 
 
-def plot_accuracy(training_data, validation_data):
+def plot_accuracy(training_data, validation_data, plot_name="accuracy_plot"):
     plt.plot(
         list(range(1, len(training_data) + 1)), training_data, label="Training Data"
     )
@@ -68,11 +68,11 @@ def plot_accuracy(training_data, validation_data):
     plt.title("Training Accuracy")
     plt.xlabel("Epochs")
     plt.ylabel("Accuracy (percentage)")
-    plt.ylim(top=100)
     plt.legend()
-    PLOT_NAME = "accuracy_plot.png"
+    PLOT_NAME = f"{plot_name}.png"
     plt.savefig(PLOT_NAME)
     logging.debug(f"Created accuracy vs epochs plot {PLOT_NAME}.")
+
 
 if __name__ == "__main__":
     raise Exception("This module is not an entry point!")
