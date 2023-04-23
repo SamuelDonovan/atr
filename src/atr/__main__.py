@@ -291,7 +291,7 @@ if __name__ == "__main__":
             dnn_utils.train(train_loader, model, loss_fn, optimizer, DEVICE)
             if args.plot:
                 accuracy = dnn_utils.test(
-                    train_loader, model, loss_fn, DEVICE, no_output=True
+                    train_loader, model, loss_fn, DEVICE, no_output=False
                 )
                 training_accuracy.append(accuracy)
             accuracy = dnn_utils.test(validation_loader, model, loss_fn, DEVICE)
