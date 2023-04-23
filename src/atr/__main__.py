@@ -281,6 +281,7 @@ if __name__ == "__main__":
 
         training_accuracy = []
         validation_accuracy = []
+        logging.info(f"Training Model: " + args.model)
         for epoch in range(TRAINING_EPOCHS):
             logging.info(f"-----------------------------")
             logging.info(
