@@ -51,7 +51,8 @@ class CXPDataset(torch.utils.data.Dataset):
         label = 1 if self.metadata.dangerous[idx] else 0
         img_name = str(self.metadata.basename[idx]).zfill(4)
         image = None
-        img_path = os.path.join(random.choice(self.root_dirs), img_name)
+        image_type = random.choice(self.root_dirs)
+        img_path = os.path.join(image_type, img_name)
         if os.path.exists(img_path + ".png"):
             image = Image.open(img_path + ".png")
         elif os.path.exists(img_path + ".jpg"):
@@ -60,6 +61,15 @@ class CXPDataset(torch.utils.data.Dataset):
             raise ValueError(
                 f"Image {img_name} not found in any of the root directories"
             )
+        # Each image shows an object inside of a tray. To remove the handles
+        # of the tray from each image the edges are cropped.
+        additional_trim = 0.05 if "Photo" == image_type else 0
+        width, height = image.size
+        left = int((0.15 + additional_trim) * width)  
+        right = width - int((0.15 + additional_trim) * width)
+        top = int((0.05 + additional_trim) * height)  
+        bottom = height - int((0.05 + additional_trim) * height)
+        image = image.crop((left, top, right, bottom))
         if self.transform is not None:
             image = self.transform(image)
         return image, label

@@ -83,7 +83,7 @@ def parse_inputs():
         "-i",
         "--image_size",
         type=int,
-        default=224,
+        default=64,
         help="Number of pixels on each side of the image to use.",
     )
     parser.add_argument(
@@ -138,12 +138,6 @@ def parse_inputs():
         logging.error("Cannot save model results without training.")
         error_printout()
 
-    if args.test and ((not args.train) and (not args.load)):
-        logging.error(
-            "Cannot test model results without training or loading the model."
-        )
-        error_printout()
-
     if (
         (not args.test)
         and (not args.save)
@@ -165,40 +159,42 @@ if __name__ == "__main__":
 
     # Testing done using pytorch 2.0.0+cu117.
     logging.debug(f"Pytorch version is {torch.__version__}")
+    # Testing done using torchvision 0.15.1+cu117.
+    logging.debug(f"Torchvision version is {torchvision.__version__}")
 
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logging.debug(f"Using {DEVICE} for torch.")
 
     if "resnet18" == args.model:
-        model = torchvision.models.resnet18(num_classes=2).to(DEVICE)
+        model = torchvision.models.resnet18(num_classes=2, weights=None).to(DEVICE)
     elif "resnet50" == args.model:
-        model = torchvision.models.resnet50(num_classes=2).to(DEVICE)
+        model = torchvision.models.resnet50(num_classes=2, weights=None).to(DEVICE)
     elif "alexnet" == args.model:
-        model = torchvision.models.alexnet(num_classes=2).to(DEVICE)
+        model = torchvision.models.alexnet(num_classes=2, weights=None).to(DEVICE)
     elif "vit_h_14" == args.model:
-        model = torchvision.models.vit_h_14(num_classes=2).to(DEVICE)
+        model = torchvision.models.vit_h_14(num_classes=2, weights=None).to(DEVICE)
     elif "vgg11" == args.model:
-        model = torchvision.models.vgg11(num_classes=2).to(DEVICE)
+        model = torchvision.models.vgg11(num_classes=2, weights=None).to(DEVICE)
     elif "efficientnet_b0" == args.model:
-        model = torchvision.models.efficientnet_b0(num_classes=2).to(DEVICE)
+        model = torchvision.models.efficientnet_b0(num_classes=2, weights=None).to(DEVICE)
     elif "densenet121" == args.model:
-        model = torchvision.models.densenet121(num_classes=2).to(DEVICE)
+        model = torchvision.models.densenet121(num_classes=2, weights=None).to(DEVICE)
     elif "densenet201" == args.model:
-        model = torchvision.models.densenet201(num_classes=2).to(DEVICE)
+        model = torchvision.models.densenet201(num_classes=2, weights=None).to(DEVICE)
     elif "maxvit_t" == args.model:
-        model = torchvision.models.maxvit_t(num_classes=2).to(DEVICE)
+        model = torchvision.models.maxvit_t(num_classes=2, weights=None).to(DEVICE)
     elif "swin_t" == args.model:
-        model = torchvision.models.swin_t(num_classes=2).to(DEVICE)
+        model = torchvision.models.swin_t(num_classes=2, weights=None).to(DEVICE)
     elif "swin_v2_t" == args.model:
-        model = torchvision.models.swin_v2_t(num_classes=2).to(DEVICE)
+        model = torchvision.models.swin_v2_t(num_classes=2, weights=None).to(DEVICE)
     elif "efficientnet_v2_s" == args.model:
-        model = torchvision.models.efficientnet_v2_s(num_classes=2).to(DEVICE)
+        model = torchvision.models.efficientnet_v2_s(num_classes=2, weights=None).to(DEVICE)
     elif "convnext_tiny" == args.model:
-        model = torchvision.models.convnext_tiny(num_classes=2).to(DEVICE)
+        model = torchvision.models.convnext_tiny(num_classes=2, weights=None).to(DEVICE)
     elif "squeezenet1_0" == args.model:
-        model = torchvision.models.squeezenet1_0(num_classes=2).to(DEVICE)
+        model = torchvision.models.squeezenet1_0(num_classes=2, weights=None).to(DEVICE)
     elif "squeezenet1_1" == args.model:
-        model = torchvision.models.squeezenet1_1(num_classes=2).to(DEVICE)
+        model = torchvision.models.squeezenet1_1(num_classes=2, weights=None).to(DEVICE)
     else:
         raise Exception("Invalid model specified!")
 
@@ -226,16 +222,17 @@ if __name__ == "__main__":
             [
                 torchvision.transforms.Resize((args.image_size, args.image_size)),
                 torchvision.transforms.ToTensor(),
-                torchvision.transforms.RandomRotation(90),
-                torchvision.transforms.RandomHorizontalFlip(),
-                torchvision.transforms.RandomVerticalFlip(),
+                 torchvision.transforms.RandomRotation(90),
+                 torchvision.transforms.RandomHorizontalFlip(),
+                 torchvision.transforms.RandomVerticalFlip(),
+                 torchvision.transforms.RandomInvert(),
                 # torchvision.transforms.ColorJitter(
                 #     brightness=(0.5, 1.5),
                 #     contrast=(1),
                 #     saturation=(0.5, 1.5),
                 #     hue=(-0.1, 0.1),
                 # ),
-                torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                 torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
             ]
         )
         return transform(image)
@@ -281,7 +278,8 @@ if __name__ == "__main__":
 
         training_accuracy = []
         validation_accuracy = []
-        logging.info(f"Training Model: " + args.model)
+        logging.info(f"Training Model: {args.model}")
+        logging.info(f"Using Data: {args.data}")
         for epoch in range(TRAINING_EPOCHS):
             logging.info(f"-----------------------------")
             logging.info(
@@ -289,15 +287,13 @@ if __name__ == "__main__":
             )
             logging.info(f"-----------------------------")
             dnn_utils.train(train_loader, model, loss_fn, optimizer, DEVICE)
-            if args.plot:
-                accuracy = dnn_utils.test(
-                    train_loader, model, loss_fn, DEVICE, no_output=False
-                )
-                training_accuracy.append(accuracy)
-            accuracy = dnn_utils.test(validation_loader, model, loss_fn, DEVICE)
-            validation_accuracy.append(accuracy)
+            train_accuracy = dnn_utils.test(
+                train_loader, model, loss_fn, DEVICE, no_output=False
+            )
+            training_accuracy.append(train_accuracy)
+            val_accuracy = dnn_utils.test(validation_loader, model, loss_fn, DEVICE)
+            validation_accuracy.append(val_accuracy)
 
-    if args.plot and args.train:
         PLOT_NAME = f"{args.model}_e{args.epochs}_b{args.batch_size}_d{args.data}"
         dnn_utils.plot_accuracy(training_accuracy, validation_accuracy, PLOT_NAME)
 

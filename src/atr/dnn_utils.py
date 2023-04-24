@@ -36,7 +36,8 @@ def test(dataloader, model, loss_fn, device, no_output=False):
     size = len(dataloader.dataset)
     num_batches = len(dataloader)
     model.eval()
-    test_loss, correct = 0, 0
+    correct = 0
+    test_loss = 0
     with torch.no_grad():
         for x, y in dataloader:
             x, y = x.to(device), y.to(device)
@@ -45,14 +46,14 @@ def test(dataloader, model, loss_fn, device, no_output=False):
             correct += (pred.argmax(1) == y).type(torch.float).sum().item()
     test_loss /= num_batches
     correct /= size
-    accuracy = 100 * correct
+    accuracy_test = 100 * correct
     if no_output:
-        return accuracy
+        return accuracy_test
     logging.info("Test Error:")
-    logging.info(f"Accuracy: {accuracy:>0.3f}%")
+    logging.info(f"Accuracy: {accuracy_test:>0.3f}%")
     logging.info(f"Avg loss: {test_loss:>8f}")
     logging.info("")
-    return accuracy
+    return accuracy_test
 
 
 def plot_accuracy(training_data, validation_data, plot_name="accuracy_plot"):
@@ -70,7 +71,10 @@ def plot_accuracy(training_data, validation_data, plot_name="accuracy_plot"):
     plt.ylabel("Accuracy (percentage)")
     plt.legend()
     PLOT_NAME = f"{plot_name}.png"
-    plt.savefig(PLOT_NAME)
+    FOLDER = "plots"
+    if not os.path.exists(FOLDER):
+        os.mkdir(FOLDER)
+    plt.savefig(os.path.join(FOLDER,PLOT_NAME))
     logging.debug(f"Created accuracy vs epochs plot {PLOT_NAME}.")
 
 

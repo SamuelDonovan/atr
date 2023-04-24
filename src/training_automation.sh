@@ -3,6 +3,13 @@
 if [ $# -lt 3 ]
 then
 	echo "Not enough arguments supplied"
+	echo "Usage:"
+	echo "./training_automation.sh b 32 e 10 i 224"
+	echo "where b is the batch size"
+	echo "where e is the number of epochs"
+	echo "where i is the image size in pixels for both height and width"
+	echo "m can also be optionally supplied to specify the model to use"
+	echo "if m is not specified then all supported models will be tested."
 	exit 2
 fi
 
@@ -29,24 +36,21 @@ else
 	echo "Image arguments: $image_arg"
 fi
 
+declare -a dataTypes=("Photo" "Low" "High" "Density" 
+	"Photo Low High" "Colour Density Grey High Low Photo" )
+declare -a models=("alexnet" "resnet18" "resnet50" "vit_h_14" 
+	"vgg11" "efficientnet_b0" "densenet121" "densenet201" 
+	"maxvit_t" "swin_t" "swin_v2_t" "efficientnet_v2_s" 
+	"convnext_tiny" "squeezenet1_0" "squeezenet1_1")
+
 if [ -n "$model" ]; then
-	echo "Only training model: $model"
-  python3 -m atr --train --test --save --batch_size $batch_size --epochs $epochs $image_arg --model $model
-else
-	echo "No model specified, training all models"
-	python3 -m atr --train --test --save --batch_size $batch_size --epochs $epochs $image_arg --model alexnet
-	python3 -m atr --train --test --save --batch_size $batch_size --epochs $epochs $image_arg --model resnet18
-	python3 -m atr --train --test --save --batch_size $batch_size --epochs $epochs $image_arg --model resnet50
-	python3 -m atr --train --test --save --batch_size $batch_size --epochs $epochs $image_arg --model vit_h_14
-	python3 -m atr --train --test --save --batch_size $batch_size --epochs $epochs $image_arg --model vgg11
-	python3 -m atr --train --test --save --batch_size $batch_size --epochs $epochs $image_arg --model efficientnet_b0
-	python3 -m atr --train --test --save --batch_size $batch_size --epochs $epochs $image_arg --model densenet121
-	python3 -m atr --train --test --save --batch_size $batch_size --epochs $epochs $image_arg --model densenet201
-	python3 -m atr --train --test --save --batch_size $batch_size --epochs $epochs $image_arg --model maxvit_t
-	python3 -m atr --train --test --save --batch_size $batch_size --epochs $epochs $image_arg --model swin_t
-	python3 -m atr --train --test --save --batch_size $batch_size --epochs $epochs $image_arg --model swin_v2_t
-	python3 -m atr --train --test --save --batch_size $batch_size --epochs $epochs $image_arg --model efficientnet_v2_s
-	python3 -m atr --train --test --save --batch_size $batch_size --epochs $epochs $image_arg --model convnext_tiny
-	python3 -m atr --train --test --save --batch_size $batch_size --epochs $epochs $image_arg --model squeezenet1_0
-	python3 -m atr --train --test --save --batch_size $batch_size --epochs $epochs $image_arg --model squeezenet1_1
+	 echo "Only training model: $model"
+	 python3 -m atr --train --test --save --batch_size $batch_size --epochs $epochs $image_arg --model $model
+	 exit
 fi
+
+for data in ${dataTypes[@]}; do
+	for model in ${models[@]}; do
+		python3 -m atr --train --test --save --batch_size $batch_size --epochs $epochs $image_arg --data $data --model $model
+	done
+done

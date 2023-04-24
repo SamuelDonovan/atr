@@ -22,14 +22,18 @@ After installing the necessary requirements the code can be code can be run from
 python3 -m atr --help
 ```
 
-The command line interface allows for training, testing, model saving, model loading, and variable hyperparameters. For example to train and test with the default hyperparameters and extra verbosity, run the following:
+The command line interface allows for training, testing, model saving, model loading, and variable hyperparameters. For example to train and test with the default hyperparameters, run the following:
 
 ```sh
-python3 -m atr --train --test -v
+python3 -m atr --train --test
 ```
 
-To train, save the model, and test with a batch size of 64 and 10 epochs and extra verbosity, run the following:
+To train, save the model, and test with a batch size of 64 and 10 epochs, run the following:
 
 ```sh
-python3 -m atr --train --test --save --batch_size 64 --epochs 10 -v
+python3 -m atr --train --test --save --batch_size 64 --epochs 10 
 ```
+
+### Other
+
+A `training_automation.sh` script has been provided as well. This can be used to wrap the python command line interface to allow for batch testing of various models/hyperparameters.
