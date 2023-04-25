@@ -331,8 +331,8 @@ if __name__ == "__main__":
             validation_accuracy.append(val_accuracy)
 
         PLOT_NAME = f"{args.model}_e{args.epochs}_b{args.batch_size}_d{args.data}"
-        # dnn_utils.plot_accuracy(training_accuracy, validation_accuracy, PLOT_NAME)
-        dnn_utils.plot_accuracy(validation_accuracy, PLOT_NAME)
+        dnn_utils.plot_accuracy(training_accuracy, validation_accuracy, PLOT_NAME)
+        # dnn_utils.plot_accuracy(validation_accuracy, PLOT_NAME)
 
     if args.save:
         torch.save(model.state_dict(), f"{args.save_name}.pth")

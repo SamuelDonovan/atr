@@ -41,10 +41,13 @@ fi
 declare -a dataTypes=("Photo" "Low" "High"
 	"Photo Low High")
 
-declare -a models=("alexnet" "resnet50" "vit_h_14" 
-	"vgg11" "densenet201" "maxvit_t"
-	"swin_v2_t" "efficientnet_v2_s" 
-	"convnext_tiny" "squeezenet1_1")
+# declare -a models=("alexnet" "resnet50" "vit_h_14" 
+# 	"vgg11" "densenet201" "maxvit_t"
+# 	"swin_v2_t" "efficientnet_v2_s" 
+# 	"convnext_tiny" "squeezenet1_1")
+
+declare -a models=("alexnet" 
+	"vgg11")
 
 if [ -n "$model" ]; then
 	for data in "${dataTypes[@]}"; do
