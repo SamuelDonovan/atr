@@ -222,17 +222,7 @@ if __name__ == "__main__":
             [
                 torchvision.transforms.Resize((args.image_size, args.image_size)),
                 torchvision.transforms.ToTensor(),
-                 torchvision.transforms.RandomRotation(90),
-                 torchvision.transforms.RandomHorizontalFlip(),
-                 torchvision.transforms.RandomVerticalFlip(),
-                 torchvision.transforms.RandomInvert(),
-                # torchvision.transforms.ColorJitter(
-                #     brightness=(0.5, 1.5),
-                #     contrast=(1),
-                #     saturation=(0.5, 1.5),
-                #     hue=(-0.1, 0.1),
-                # ),
-                 torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
             ]
         )
         return transform(image)
@@ -269,6 +259,21 @@ if __name__ == "__main__":
         ],
     )
 
+    train_dataset_RandomRotation = train_dataset
+    train_dataset_RandomHorizontalFlip = train_dataset
+    train_dataset_RandomVerticalFlip = train_dataset
+    train_dataset_RandomRotation.dataset.transform =  torchvision.transforms.Compose([
+                torchvision.transforms.RandomRotation(90)
+            ])
+    train_dataset_RandomHorizontalFlip.dataset.transform =  torchvision.transforms.Compose([
+                torchvision.transforms.RandomHorizontalFlip()
+            ])
+    train_dataset_RandomVerticalFlip.dataset.transform =  torchvision.transforms.Compose([
+                torchvision.transforms.RandomVerticalFlip()
+            ])
+
+    train_dataset = torch.utils.data.ConcatDataset([train_dataset_RandomRotation, train_dataset_RandomHorizontalFlip, train_dataset_RandomVerticalFlip])
+
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=BATCH_SIZE, shuffle=True
     )
@@ -286,7 +291,7 @@ if __name__ == "__main__":
     if args.train:
         optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
-        training_accuracy = []
+        # training_accuracy = []
         validation_accuracy = []
         logging.info(f"Training Model: {args.model}")
         logging.info(f"Using Data: {args.data}")
@@ -297,15 +302,16 @@ if __name__ == "__main__":
             )
             logging.info(f"-----------------------------")
             dnn_utils.train(train_loader, model, loss_fn, optimizer, DEVICE)
-            train_accuracy = dnn_utils.test(
-                train_loader, model, loss_fn, DEVICE, no_output=False
-            )
-            training_accuracy.append(train_accuracy)
+            # train_accuracy = dnn_utils.test(
+            #     train_loader, model, loss_fn, DEVICE, no_output=False
+            # )
+            # training_accuracy.append(train_accuracy)
             val_accuracy = dnn_utils.test(validation_loader, model, loss_fn, DEVICE)
             validation_accuracy.append(val_accuracy)
 
         PLOT_NAME = f"{args.model}_e{args.epochs}_b{args.batch_size}_d{args.data}"
-        dnn_utils.plot_accuracy(training_accuracy, validation_accuracy, PLOT_NAME)
+        # dnn_utils.plot_accuracy(training_accuracy, validation_accuracy, PLOT_NAME)
+        dnn_utils.plot_accuracy(validation_accuracy, PLOT_NAME)
 
     if args.save:
         torch.save(model.state_dict(), f"{args.save_name}.pth")
