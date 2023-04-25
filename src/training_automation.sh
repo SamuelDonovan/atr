@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Usage example:
+#./training_automation.sh -b 16 -e 5 -i 64 2>&1 | tee training_automation_$(date +"%F_%H").log
+
 if [ $# -lt 3 ]
 then
 	echo "Not enough arguments supplied"
@@ -35,13 +38,13 @@ else
 	echo "Image arguments: $image_arg"
 fi
 
-declare -a dataTypes=("Photo" "Low" "High" "Density" 
-	"Photo Low High" "Colour Density Grey High Low Photo" )
+declare -a dataTypes=("Photo" "Low" "High"
+	"Photo Low High")
 
-declare -a models=("alexnet" "resnet18" "resnet50" "vit_h_14" 
-	"vgg11" "efficientnet_b0" "densenet121" "densenet201" 
-	"maxvit_t" "swin_t" "swin_v2_t" "efficientnet_v2_s" 
-	"convnext_tiny" "squeezenet1_0" "squeezenet1_1")
+declare -a models=("alexnet" "resnet50" "vit_h_14" 
+	"vgg11" "densenet201" "maxvit_t"
+	"swin_v2_t" "efficientnet_v2_s" 
+	"convnext_tiny" "squeezenet1_1")
 
 if [ -n "$model" ]; then
 	for data in "${dataTypes[@]}"; do

@@ -74,7 +74,7 @@ def parse_inputs():
         "-b", "--batch_size", type=int, default=32, help="Batch size for training"
     )
     parser.add_argument(
-        "--learning_rate", type=float, default=0.001, help="Learning rate for training"
+        "--learning_rate", type=float, default=0.01, help="Learning rate for training"
     )
     parser.add_argument(
         "-e", "--epochs", type=int, default=40, help="Number of training epochs"
@@ -176,7 +176,9 @@ if __name__ == "__main__":
     elif "vgg11" == args.model:
         model = torchvision.models.vgg11(num_classes=2, weights=None).to(DEVICE)
     elif "efficientnet_b0" == args.model:
-        model = torchvision.models.efficientnet_b0(num_classes=2, weights=None).to(DEVICE)
+        model = torchvision.models.efficientnet_b0(num_classes=2, weights=None).to(
+            DEVICE
+        )
     elif "densenet121" == args.model:
         model = torchvision.models.densenet121(num_classes=2, weights=None).to(DEVICE)
     elif "densenet201" == args.model:
@@ -188,7 +190,9 @@ if __name__ == "__main__":
     elif "swin_v2_t" == args.model:
         model = torchvision.models.swin_v2_t(num_classes=2, weights=None).to(DEVICE)
     elif "efficientnet_v2_s" == args.model:
-        model = torchvision.models.efficientnet_v2_s(num_classes=2, weights=None).to(DEVICE)
+        model = torchvision.models.efficientnet_v2_s(num_classes=2, weights=None).to(
+            DEVICE
+        )
     elif "convnext_tiny" == args.model:
         model = torchvision.models.convnext_tiny(num_classes=2, weights=None).to(DEVICE)
     elif "squeezenet1_0" == args.model:
@@ -262,17 +266,23 @@ if __name__ == "__main__":
     train_dataset_RandomRotation = train_dataset
     train_dataset_RandomHorizontalFlip = train_dataset
     train_dataset_RandomVerticalFlip = train_dataset
-    train_dataset_RandomRotation.dataset.transform =  torchvision.transforms.Compose([
-                torchvision.transforms.RandomRotation(90)
-            ])
-    train_dataset_RandomHorizontalFlip.dataset.transform =  torchvision.transforms.Compose([
-                torchvision.transforms.RandomHorizontalFlip()
-            ])
-    train_dataset_RandomVerticalFlip.dataset.transform =  torchvision.transforms.Compose([
-                torchvision.transforms.RandomVerticalFlip()
-            ])
+    train_dataset_RandomRotation.dataset.transform = torchvision.transforms.Compose(
+        [torchvision.transforms.RandomRotation(90)]
+    )
+    train_dataset_RandomHorizontalFlip.dataset.transform = (
+        torchvision.transforms.Compose([torchvision.transforms.RandomHorizontalFlip()])
+    )
+    train_dataset_RandomVerticalFlip.dataset.transform = torchvision.transforms.Compose(
+        [torchvision.transforms.RandomVerticalFlip()]
+    )
 
-    train_dataset = torch.utils.data.ConcatDataset([train_dataset_RandomRotation, train_dataset_RandomHorizontalFlip, train_dataset_RandomVerticalFlip])
+    train_dataset = torch.utils.data.ConcatDataset(
+        [
+            train_dataset_RandomRotation,
+            train_dataset_RandomHorizontalFlip,
+            train_dataset_RandomVerticalFlip,
+        ]
+    )
 
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=BATCH_SIZE, shuffle=True

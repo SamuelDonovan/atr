@@ -75,7 +75,7 @@ def plot_accuracy(validation_data, plot_name="accuracy_plot"):
     FOLDER = "plots"
     if not os.path.exists(FOLDER):
         os.mkdir(FOLDER)
-    plt.savefig(os.path.join(FOLDER,PLOT_NAME))
+    plt.savefig(os.path.join(FOLDER, PLOT_NAME))
     logging.debug(f"Created accuracy vs epochs plot {PLOT_NAME}.")
 
 

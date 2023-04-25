@@ -61,11 +61,11 @@ class CXPDataset(torch.utils.data.Dataset):
             )
         # Each image shows an object inside of a tray. To remove the handles
         # of the tray from each image the edges are cropped.
-        additional_trim = 0.05 if "Photo" == self.root_dir.rsplit('/', 1) else 0
+        additional_trim = 0.05 if "Photo" == self.root_dir.rsplit("/", 1) else 0
         width, height = image.size
-        left = int((0.15 + additional_trim) * width)  
+        left = int((0.15 + additional_trim) * width)
         right = width - int((0.15 + additional_trim) * width)
-        top = int((0.05 + additional_trim) * height)  
+        top = int((0.05 + additional_trim) * height)
         bottom = height - int((0.05 + additional_trim) * height)
         image = image.crop((left, top, right, bottom))
         if self.transform is not None:
