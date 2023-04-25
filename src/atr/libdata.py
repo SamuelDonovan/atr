@@ -1,7 +1,6 @@
 # From the python standard library
 import logging
 import os
-import random
 import shutil
 import urllib
 import zipfile
@@ -39,9 +38,9 @@ def download_zip_data(urls):
 
 
 class CXPDataset(torch.utils.data.Dataset):
-    def __init__(self, metadata, root_dirs, transform=None):
+    def __init__(self, metadata, root_dir, transform=None):
         self.metadata = metadata
-        self.root_dirs = root_dirs
+        self.root_dir = root_dir
         self.transform = transform
 
     def __len__(self):
@@ -51,8 +50,7 @@ class CXPDataset(torch.utils.data.Dataset):
         label = 1 if self.metadata.dangerous[idx] else 0
         img_name = str(self.metadata.basename[idx]).zfill(4)
         image = None
-        image_type = random.choice(self.root_dirs)
-        img_path = os.path.join(image_type, img_name)
+        img_path = os.path.join(self.root_dir, img_name)
         if os.path.exists(img_path + ".png"):
             image = Image.open(img_path + ".png")
         elif os.path.exists(img_path + ".jpg"):
@@ -63,7 +61,7 @@ class CXPDataset(torch.utils.data.Dataset):
             )
         # Each image shows an object inside of a tray. To remove the handles
         # of the tray from each image the edges are cropped.
-        additional_trim = 0.05 if "Photo" == image_type else 0
+        additional_trim = 0.05 if "Photo" == self.root_dir.rsplit('/', 1) else 0
         width, height = image.size
         left = int((0.15 + additional_trim) * width)  
         right = width - int((0.15 + additional_trim) * width)

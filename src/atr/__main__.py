@@ -241,12 +241,22 @@ if __name__ == "__main__":
 
     root_dirs = ["COMPASS-XP/COMPASS-XP/" + image_type for image_type in args.data]
 
-    for image_type in args.data:
-        dataset = libdata.CXPDataset(
-            metadata=dataset_metadata,
-            root_dirs=root_dirs,
-            transform=preprocess_image,
-        )
+    dataset = None
+    for root_dir in root_dirs:
+        if dataset is None:
+            dataset = libdata.CXPDataset(
+                metadata=dataset_metadata,
+                root_dir=root_dir,
+                transform=preprocess_image,
+            )
+        else:
+            dataset_old = dataset
+            dataset = libdata.CXPDataset(
+                metadata=dataset_metadata,
+                root_dir=root_dir,
+                transform=preprocess_image,
+            )
+            dataset = torch.utils.data.ConcatDataset([dataset_old, dataset])
 
     TRAIN_SIZE = int(0.8 * len(dataset))
     VALIDATION_SIZE = int(0.1 * len(dataset))
