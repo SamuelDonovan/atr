@@ -24,7 +24,6 @@ do
 esac
 done
 
-
 echo "Batch Size: $batch_size"
 echo "Epochs: $epochs"
 
@@ -38,19 +37,27 @@ fi
 
 declare -a dataTypes=("Photo" "Low" "High" "Density" 
 	"Photo Low High" "Colour Density Grey High Low Photo" )
+
 declare -a models=("alexnet" "resnet18" "resnet50" "vit_h_14" 
 	"vgg11" "efficientnet_b0" "densenet121" "densenet201" 
 	"maxvit_t" "swin_t" "swin_v2_t" "efficientnet_v2_s" 
 	"convnext_tiny" "squeezenet1_0" "squeezenet1_1")
 
 if [ -n "$model" ]; then
-	 echo "Only training model: $model"
-	 python3 -m atr --train --test --save --batch_size $batch_size --epochs $epochs $image_arg --model $model
-	 exit
+	for data in "${dataTypes[@]}"; do
+		dataName="${data// /_}"
+	 	echo "Only training model: $model"
+	 	python3 -m atr --train --test --save --plot --save_name $model_$dataName --batch_size $batch_size --epochs $epochs $image_arg --data $data --model $model
+		echo ""
+	done
+	exit
 fi
 
-for data in ${dataTypes[@]}; do
-	for model in ${models[@]}; do
-		python3 -m atr --train --test --save --batch_size $batch_size --epochs $epochs $image_arg --data $data --model $model
+for data in "${dataTypes[@]}"; do
+	dataName="${data// /_}"
+	for model in "${models[@]}"; do
+		echo python3 -m atr --train --test --save --plot --save_name $model_$dataName --batch_size $batch_size --epochs $epochs --image_size $image_size --data $data --model $model
+		python3 -m atr --train --test --save --plot --save_name $model_$dataName --batch_size $batch_size --epochs $epochs $image_arg --data $data --model $model
+		echo ""
 	done
 done
