@@ -269,27 +269,21 @@ if __name__ == "__main__":
     train_dataset_RandomRotation.dataset.transform = torchvision.transforms.Compose(
         [
             torchvision.transforms.RandomRotation(90),
-            torchvision.transforms.Resize((args.image_size, args.image_size)),
-            torchvision.transforms.ToTensor(),
-            torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            preprocess_image,
         ]
     )
     train_dataset_RandomHorizontalFlip.dataset.transform = (
         torchvision.transforms.Compose(
             [
                 torchvision.transforms.RandomHorizontalFlip(),
-                torchvision.transforms.Resize((args.image_size, args.image_size)),
-                torchvision.transforms.ToTensor(),
-                torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                preprocess_image,
             ]
         )
     )
     train_dataset_RandomVerticalFlip.dataset.transform = torchvision.transforms.Compose(
         [
             torchvision.transforms.RandomVerticalFlip(),
-            torchvision.transforms.Resize((args.image_size, args.image_size)),
-            torchvision.transforms.ToTensor(),
-            torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            preprocess_image,
         ]
     )
 
