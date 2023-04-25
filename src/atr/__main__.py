@@ -312,7 +312,7 @@ if __name__ == "__main__":
     if args.train:
         optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
-        # training_accuracy = []
+        training_accuracy = []
         validation_accuracy = []
         logging.info(f"Training Model: {args.model}")
         logging.info(f"Using Data: {args.data}")
@@ -322,11 +322,11 @@ if __name__ == "__main__":
                 f"---------- Epoch {epoch + 1} {'----------' if epoch <= 10 else '---------'}"
             )
             logging.info(f"-----------------------------")
-            dnn_utils.train(train_loader, model, loss_fn, optimizer, DEVICE)
+            train_accuracy = dnn_utils.train(train_loader, model, loss_fn, optimizer, DEVICE)
             # train_accuracy = dnn_utils.test(
             #     train_loader, model, loss_fn, DEVICE, no_output=False
             # )
-            # training_accuracy.append(train_accuracy)
+            training_accuracy.append(train_accuracy)
             val_accuracy = dnn_utils.test(validation_loader, model, loss_fn, DEVICE)
             validation_accuracy.append(val_accuracy)
 

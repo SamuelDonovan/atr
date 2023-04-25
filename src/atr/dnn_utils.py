@@ -11,11 +11,13 @@ from matplotlib import pyplot as plt
 # From numpy
 import numpy as np
 
+from tqdm import tqdm
 
 def train(dataloader, model, loss_fn, optimizer, device):
     size = len(dataloader.dataset)
     model.train()
-    for batch, (x, y) in enumerate(dataloader):
+    correct = 0
+    for batch, (x, y) in enumerate(tqdm(dataloader)):
         x, y = x.to(device), y.to(device)
 
         # Compute prediction error
@@ -27,9 +29,15 @@ def train(dataloader, model, loss_fn, optimizer, device):
         loss.backward()
         optimizer.step()
 
-        if batch % 100 == 0:
-            loss, current = loss.item(), (batch + 1) * len(x)
-            logging.info(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+        # For correct predictions
+        max_index = pred.max(dim = 1)[1]
+        correct += (max_index == y).sum()
+
+        # if batch % 100 == 0:
+        #     loss, current = loss.item(), (batch + 1) * len(x)
+        #     logging.info(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+    training_accuracy = 100. * correct / size
+    return training_accuracy
 
 
 def test(dataloader, model, loss_fn, device, no_output=False):
@@ -39,7 +47,7 @@ def test(dataloader, model, loss_fn, device, no_output=False):
     correct = 0
     test_loss = 0
     with torch.no_grad():
-        for x, y in dataloader:
+        for x, y in tqdm(dataloader):
             x, y = x.to(device), y.to(device)
             pred = model(x)
             test_loss += loss_fn(pred, y).item()
