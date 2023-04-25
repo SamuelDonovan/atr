@@ -322,17 +322,12 @@ if __name__ == "__main__":
                 f"---------- Epoch {epoch + 1} {'----------' if epoch <= 10 else '---------'}"
             )
             logging.info(f"-----------------------------")
-            train_accuracy = dnn_utils.train(train_loader, model, loss_fn, optimizer, DEVICE)
-            # train_accuracy = dnn_utils.test(
-            #     train_loader, model, loss_fn, DEVICE, no_output=False
-            # )
-            training_accuracy.append(train_accuracy)
+            dnn_utils.train(train_loader, model, loss_fn, optimizer, DEVICE)
             val_accuracy = dnn_utils.test(validation_loader, model, loss_fn, DEVICE)
             validation_accuracy.append(val_accuracy)
 
         PLOT_NAME = f"{args.model}_e{args.epochs}_b{args.batch_size}_d{args.data}"
-        dnn_utils.plot_accuracy(training_accuracy, validation_accuracy, PLOT_NAME)
-        # dnn_utils.plot_accuracy(validation_accuracy, PLOT_NAME)
+        dnn_utils.plot_accuracy(validation_accuracy, PLOT_NAME)
 
     if args.save:
         torch.save(model.state_dict(), f"{args.save_name}.pth")

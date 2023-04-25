@@ -64,11 +64,7 @@ def test(dataloader, model, loss_fn, device, no_output=False):
     return accuracy_test
 
 
-def plot_accuracy(training_data, validation_data, plot_name="accuracy_plot"):
-# def plot_accuracy(validation_data, plot_name="accuracy_plot"):
-    plt.plot(
-        list(range(1, len(training_data) + 1)), training_data, label="Training Data"
-    )
+def plot_accuracy(validation_data, plot_name="accuracy_plot"):
     plt.plot(
         list(range(1, len(validation_data) + 1)),
         validation_data,
