@@ -13,6 +13,7 @@ import numpy as np
 
 from tqdm import tqdm
 
+
 def train(dataloader, model, loss_fn, optimizer, device):
     size = len(dataloader.dataset)
     model.train()
@@ -30,13 +31,13 @@ def train(dataloader, model, loss_fn, optimizer, device):
         optimizer.step()
 
         # For correct predictions
-        max_index = pred.max(dim = 1)[1]
+        max_index = pred.max(dim=1)[1]
         correct += (max_index == y).sum()
 
         # if batch % 100 == 0:
         #     loss, current = loss.item(), (batch + 1) * len(x)
         #     logging.info(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
-    training_accuracy = 100. * correct / size
+    training_accuracy = 100.0 * correct / size
     return training_accuracy
 
 
